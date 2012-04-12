@@ -2,13 +2,21 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Highcharts Example</title>
-
-		<script type="text/javascript" src="js/jquery-1.7.2	.min.js"></script>
+		<title>CycleGraph</title>
+		<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.18.custom.min.js"></script>
+		<link rel="stylesheet" href="css/jquery.ui.all.css" TYPE="text/css" media="all">
+		<script src="js/highcharts.js"></script>
 		<script type="text/javascript">
 $(function () {
     var chart;
     $(document).ready(function() {
+		console.debug($('.paste_gpx'));
+		$('#paste_gpx').button().click(function() {
+			console.debug('click');
+		});
+		
+		
         chart = new Highcharts.Chart({
             chart: {
                 renderTo: 'container',
@@ -72,9 +80,7 @@ $(function () {
 		</script>
 	</head>
 	<body>
-<script src="js/highcharts.js"></script>
-
 <div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
-
+<input type="button" id="paste_gpx" value="Paste a GPS file" />
 	</body>
 </html>
