@@ -15,23 +15,27 @@ define('LIB_PATH', BASE_PATH.'lib/');
 //Class loaders
 require CLASS_PATH . 'CycleGraph/ClassLoader.php';
 
-$classLoader = new \Kronos\Common\ClassLoader('Doctrine\\ORM');
+$classLoader = new \CycleGraph\ClassLoader('Doctrine\\ORM');
 $classLoader->setIncludePath(LIB_PATH . 'doctrine2/lib');
 $classLoader->register();
 
-$classLoader = new \Kronos\Common\ClassLoader('Doctrine\\DBAL\\Migrations');
+$classLoader = new \CycleGraph\ClassLoader('Doctrine\\DBAL\\Migrations');
 $classLoader->setIncludePath(LIB_PATH . 'doctrine-migrations/lib');
 $classLoader->register();
 
-$classLoader = new \Kronos\Common\ClassLoader('Doctrine\\DBAL');
+$classLoader = new \CycleGraph\ClassLoader('Doctrine\\DBAL');
 $classLoader->setIncludePath(LIB_PATH . 'doctrine2/lib/vendor/doctrine-dbal/lib');
 $classLoader->register();
 
-$classLoader = new \Kronos\Common\ClassLoader('Doctrine\\Common');
+$classLoader = new \CycleGraph\ClassLoader('Doctrine\\Common');
 $classLoader->setIncludePath(LIB_PATH . 'doctrine2/lib/vendor/doctrine-common/lib');
 $classLoader->register();
 
-$classLoader = new \Kronos\Common\ClassLoader("CycleGraph");
+$classLoader = new \CycleGraph\ClassLoader('Symfony');
+$classLoader->setIncludePath(LIB_PATH . 'doctrine2/lib/vendor/');
+$classLoader->register();
+
+$classLoader = new \CycleGraph\ClassLoader("CycleGraph");
 $classLoader->setIncludePath(CLASS_PATH);
 $classLoader->register();
 
