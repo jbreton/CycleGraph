@@ -73,32 +73,29 @@ class Application {
 			$ride = $em->find('\CycleGraph\ORM\Entity\Ride', 7);
 			
 			$series = array(
-				'speed' => array('name' => 'Vitesse', 'data' => array()),
-				'max_speed' => array('name' => 'Vitesse max', 'data' => array()),
-				'avg_speed' => array('name' => 'Vitesse moy', 'data' => array()),
-				'relative_avg_speed' => array('name' => 'Vitesse avg relative', 'data' => array())
+				'effort' => array('name' => 'Effort', 'data' => array()),
+				'cadence' => array('name' => 'Cadence', 'data' => array()),
+				'hr' => array('name' => 'HR', 'data' => array()),
+				'avg_hr' => array('name' => 'AVG HR', 'data' => array()),
+				'relative_avg_hr' => array('name' => 'Relative AVG HR', 'data' => array()),
+				'elevation' => array('name' => 'Elevation', 'data' => array())
 			);
 			
-			$i = 0;
 			foreach($ride->points as $point) {
 				$time = new \DateTime($point->real_time);
-				
-				$series['speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->speed);
-				$series['max_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->max_speed);
-				$series['avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->avg_speed);
-				$series['relative_avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->avg_speed);
+
+				$series['effort']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)($point->hr / $point->cadence));
+				$series['cadence']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->cadence);
+				$series['hr']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->hr);
+				$series['avg_hr']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$ride->avg_hr);
+				$series['relative_avg_hr']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->avg_hr);
+				$series['elevation']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->elevation);
 			}
 			
 			echo '<script type="text/javascript">
 $(function () {
     var chart;
     $(document).ready(function() {
-		console.debug($(\'.paste_gpx\'));
-		$(\'#paste_gpx\').button().click(function() {
-			console.debug(\'click\');
-		});
-		
-		
         chart = new Highcharts.Chart({
             chart: {
                 renderTo: \'container\',
@@ -115,15 +112,14 @@ $(function () {
             },
             yAxis: {
                 title: {
-                    text: \'Speed\'
+                    text: \'Speed/HR\'
                 },
                 plotLines: [{
                     value: 0,
                     width: 1,
                     color: \'#808080\'
                 }],
-				min : 0,
-				max : '.(ceil($ride->max_speed / 10) * 10).'
+				min : 0
             },
             tooltip: {
                 formatter: function() {
@@ -141,23 +137,111 @@ $(function () {
             },
             series: '.json_encode(array_values($series)).',
 			plotOptions: {
-            series: {
-                marker: {
-                    enabled: false,
-                    states: {
-                        hover: {
-                            enabled: true
-                        }
-                    }
-                }
-            }
-        },
+				series: {
+					marker: {
+						enabled: false,
+						states: {
+							hover: {
+								enabled: true
+							}
+						}
+					}
+				}
+			}
         });
     });
     
 });
 		</script>
-		<div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+		<div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>';
+		
+			$series2 = array(
+				'speed' => array('name' => 'Vitesse', 'data' => array()),
+				'max_speed' => array('name' => 'Vitesse max', 'data' => array()),
+				'avg_speed' => array('name' => 'Vitesse moy', 'data' => array()),
+				'relative_avg_speed' => array('name' => 'Vitesse avg relative', 'data' => array())
+			);	
+			
+			foreach($ride->points as $point) {
+				$time = new \DateTime($point->real_time);
+
+				$series2['speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->speed);
+				$series2['max_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->max_speed);
+				$series2['avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->avg_speed);
+				$series2['relative_avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->avg_speed);
+			}
+
+			echo '<script type="text/javascript">
+	$(function () {
+		var chart2;
+		$(document).ready(function() {
+			console.debug($(\'.paste_gpx\'));
+			$(\'#paste_gpx\').button().click(function() {
+				console.debug(\'click\');
+			});
+
+
+			chart2 = new Highcharts.Chart({
+				chart: {
+					renderTo: \'container2\',
+					type: \'spline\',
+					marginRight: 130,
+					marginBottom: 25
+				},
+				title: {
+					text: \''.$ride->name.'\',
+					x: -20 //center
+				},
+				xAxis: {
+					type:\'datetime\',
+				},
+				yAxis: {
+					title: {
+						text: \'Speed\'
+					},
+					plotLines: [{
+						value: 0,
+						width: 1,
+						color: \'#808080\'
+					}],
+					min : 0,
+					max : '.(ceil($ride->max_speed / 10) * 10).'
+				},
+				tooltip: {
+					formatter: function() {
+							return \'<b>\'+ this.series.name +\'</b><br/>\'+
+							this.x +\': \'+ this.y;
+					}
+				},
+				legend: {
+					layout: \'vertical\',
+					align: \'right\',
+					verticalAlign: \'top\',
+					x: -10,
+					y: 100,
+					borderWidth: 0
+				},
+				series: '.json_encode(array_values($series2)).',
+				plotOptions: {
+				series: {
+					marker: {
+						enabled: false,
+						states: {
+							hover: {
+								enabled: true
+							}
+						}
+					}
+				}
+			},
+			});
+		});
+
+	});
+		</script>
+		<div id="container2" style="min-width: 400px; height: 400px; margin: 0 auto"></div>';
+			
+		echo '
 		<input type="button" id="paste_gpx" value="Paste a GPS file" />';
 			
 			$this->showFooter();
