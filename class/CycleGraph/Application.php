@@ -70,7 +70,7 @@ class Application {
 			
 			$em = $this->getEntityManager();
 			
-			$ride = $em->find('\CycleGraph\ORM\Entity\Ride', 7);
+			$ride = $em->find('\CycleGraph\ORM\Entity\Ride', (int)$_GET['ride']);
 			
 			$series = array(
 				'effort' => array('name' => 'Effort', 'data' => array()),
