@@ -81,8 +81,23 @@ class Application {
 				'elevation' => array('name' => 'Elevation', 'data' => array())
 			);
 			
-			foreach($ride->points as $point) {
+			foreach($ride->points as $index => $point) {
 				$time = new \DateTime($point->real_time);
+				
+				$raw = json_decode($point->raw_data);
+				
+				if($raw->F_TIME_STOPPED_SEC != $prev_stopped_time) {
+					$prev_stopped_time = $raw->F_TIME_STOPPED_SEC;
+					
+					$prev_point = $ride->points[$index-1];
+					$prev_time = new \DateTime($prev_point->real_time);
+					
+					$bands[] = array(
+						'from' => (int)($prev_time->format('U').'000')+2577600000,
+						'to' => (int)($time->format('U').'000')+2577600000,
+						'color' => '#555555'
+					);
+				}
 
 				$series['effort']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)($point->hr / $point->cadence));
 				$series['cadence']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->cadence);
@@ -109,6 +124,7 @@ $(function () {
             },
             xAxis: {
 				type:\'datetime\',
+				plotBands: '.json_encode($bands).',
             },
             yAxis: {
                 title: {
@@ -162,9 +178,10 @@ $(function () {
 				'relative_avg_speed' => array('name' => 'Vitesse avg relative', 'data' => array())
 			);	
 			
-			foreach($ride->points as $point) {
+			$prev_stopped_time = 0;
+			foreach($ride->points as $index => $point) {
 				$time = new \DateTime($point->real_time);
-
+				
 				$series2['speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->speed);
 				$series2['max_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->max_speed);
 				$series2['avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->avg_speed);
@@ -194,6 +211,7 @@ $(function () {
 				},
 				xAxis: {
 					type:\'datetime\',
+					plotBands: '.json_encode($bands).',
 				},
 				yAxis: {
 					title: {
