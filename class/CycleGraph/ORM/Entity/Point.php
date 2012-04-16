@@ -12,103 +12,103 @@ class Point
 	 * @Column(name="id", type="integer")
 	 * @GeneratedValue(strategy="AUTO")
 	 */
-	protected $id;
+	public $id;
 
 	/**
-	 * @Column(name="real_time", type="datetime")
-	 * @var DateTime
+	 * @Column(name="real_time", type="string")
+	 * @var string
 	 */
-	protected $real_time;
+	public $real_time;
 	
 	/**
-	 * @Column(name="ride_time", type="time")
-	 * @var Time
+	 * @Column(name="ride_time", type="string")
+	 * @var string
 	 */
-	protected $ride_time;
+	public $ride_time;
 	
 	/**
-	 * @Column(name="lat", type="string")
+	 * @Column(name="latitude", type="string")
 	 * @var string;
 	 */
-	protected $lat;
+	public $latitude;
 	
 	/**
-	 * @Column(name="lon", type="string")
+	 * @Column(name="longitude", type="string")
 	 * @var string;
 	 */
-	protected $lon;
+	public $longitude;
 	
 	/**
-	 * @Column(name="distance", type="decimal", precision=2)
+	 * @Column(name="distance", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	protected $distance;
+	public $distance;
 	
 	/**
-	 * @Column(name="elevation", type="decimal", precision=2)
+	 * @Column(name="elevation", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	protected $elevation;
+	public $elevation;
 	
 	/**
-	 * @Column(name="ascent", type="decimal", precision=2)
+	 * @Column(name="ascent", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	protected $ascent;
+	public $ascent;
 	
 	/**
-	 * @Column(name="descent", type="decimal", precision=2)
+	 * @Column(name="descent", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	protected $descent;
+	public $descent;
 	
 	/**
-	 * @Column(name="speed", type="decimal", precision=2)
+	 * @Column(name="speed", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	protected $speed;
+	public $speed;
 	
 	/**
-	 * @Column(name="avg_speed", type="decimal", precision=2)
+	 * @Column(name="avg_speed", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	protected $avg_speed;
+	public $avg_speed;
 	
 	/**
 	 * @Column(name="cadence", type="integer")
 	 * @var integer;
 	 */
-	protected $cadence;
+	public $cadence;
 	
 	/**
 	 * @Column(name="avg_cadence", type="integer")
 	 * @var integer;
 	 */
-	protected $avg_cadance;
+	public $avg_cadance;
 	
 	/**
 	 * @Column(name="hr", type="integer")
 	 * @var integer;
 	 */
-	protected $hr;
+	public $hr;
 	
 	/**
 	 * @Column(name="avg_hr", type="integer")
 	 * @var integer;
 	 */
-	protected $avg_hr;
+	public $avg_hr;
 	
 	/**
 	 * @Column(name="calories", type="integer")
 	 * @var integer;
 	 */
-	protected $calories;
+	public $calories;
 	
 	/**
 	 * @Column(name="raw_data", type="text")
 	 * @var Array;
 	 */
-	protected $raw_data;
+	public $raw_data;
 	
 	
 	/**
@@ -117,8 +117,5 @@ class Point
 	 *   @JoinColumn(name="ride", referencedColumnName="id")
 	 * })
 	 */
-	protected $ride;
-	
-	
+	public $ride;	
 }
-?>

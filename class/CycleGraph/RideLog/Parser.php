@@ -1,27 +1,29 @@
 <?php
 
-namespace ClycleGraph\RideLog;
+namespace CycleGraph\RideLog;
 
 class Parser {
 	private $_adaptor;
 	private $_em;
 	
 	public function __construct(\Doctrine\ORM\EntityManager $em, $adaptor='\CycleGraph\RideLog\Adaptor\CyclemeterCSV') {
-		if(is_string($adaptor)) {
-			$reflection = new ReflectionClass($adaptor);
+		$this->_em = $em;
 		
-			if($reflection->implementsInterface('\CycleGraph\RideLog\ParserAdaptor')) {
-				$this->_adaptor = $reflection->newInstance($adaptor);
+		if(is_string($adaptor)) {
+			$reflection = new \ReflectionClass($adaptor);
+		
+			if($reflection->implementsInterface('\CycleGraph\RideLog\Adaptor')) {
+				$this->_adaptor = $reflection->newInstance();
 			}
 			else {
-				throw new \Exception($adaptor.' does not implement \CycleGraph\RideLog\ParserAdaptor');
+				throw new \Exception($adaptor.' does not implement \CycleGraph\RideLog\Adaptor');
 			}
 		}
 		else if($adaptor instanceof \CycleGraph\RideLog\Adaptor) {
 			$this->_adaptor = $adaptor;
 		}
 		else {
-			throw new \Exception('The given adaptor must implement \CycleGraph\RideLog\ParserAdaptor');
+			throw new \Exception('The given adaptor must implement \CycleGraph\RideLog\Adaptor');
 		}
 	}
 	
@@ -30,14 +32,18 @@ class Parser {
 			throw new \Exception('File does not exists : '.$filename);
 		}
 		
-		$this->_adaptor->ParseFile($filename);
-		
-		$ride = $this->_adaptor->GetRideEntity();
-		while($point = $this->_adaptor->GetPointEntity()) {
-			$ride->AddPoint($point);
+		if($this->_adaptor->ParseFile($filename)) {
+			$ride = $this->_adaptor->GetRideEntity();
+			$this->_em->persist($ride);
+
+			while($point = $this->_adaptor->GetPointEntity()) {
+				$this->_em->persist($point);
+			}
+			
+			$this->_em->flush();
 		}
-		$this->_adaptor->CloseFile();
-		
-		return $ride;
+		else {
+			throw new Exception($this->_adaptor->GetParseError());
+		}
 	}
 }

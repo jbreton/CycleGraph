@@ -28,9 +28,4 @@ interface Adaptor {
 	 * @return \CycleGraph\ORM\Entiry\Point Point entity filled with data from the log file.
 	 */
 	public function GetPointEntity();
-	
-	/**
-	 * Tell the adaptor the parsing is finished and can close.
-	 */
-	public function CloseFile();
 }

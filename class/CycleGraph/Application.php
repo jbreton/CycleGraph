@@ -61,5 +61,3 @@ class Application {
 		return $this->_entity_manager;
 	}
 }
-
-?>
