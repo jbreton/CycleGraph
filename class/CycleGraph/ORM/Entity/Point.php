@@ -18,13 +18,24 @@ class Point
 	 * @Column(name="real_time", type="string")
 	 * @var string
 	 */
-	public $real_time;
+	public $realTime;
 	
 	/**
 	 * @Column(name="ride_time", type="string")
 	 * @var string
 	 */
-	public $ride_time;
+	public $rideTime;
+	
+	/**
+	 * @Column(name="duration", type="decimal", precision=7, scale=2)
+	 */
+	public $duration;
+	
+	/**
+	 * @Column(name="stopped_time", type="decimal", precision=7, scale=2)
+	 * @var string
+	 */
+	public $stoppedTime;
 	
 	/**
 	 * @Column(name="latitude", type="string")
@@ -72,7 +83,7 @@ class Point
 	 * @Column(name="avg_speed", type="decimal", precision=7, scale=2)
 	 * @var float;
 	 */
-	public $avg_speed;
+	public $avgSpeed;
 	
 	/**
 	 * @Column(name="cadence", type="integer")
@@ -84,19 +95,19 @@ class Point
 	 * @Column(name="avg_cadence", type="integer")
 	 * @var integer;
 	 */
-	public $avg_cadance;
+	public $avgCadance;
 	
 	/**
-	 * @Column(name="hr", type="integer")
+	 * @Column(name="heart_rate", type="integer")
 	 * @var integer;
 	 */
-	public $hr;
+	public $heartRate;
 	
 	/**
-	 * @Column(name="avg_hr", type="integer")
+	 * @Column(name="avg_heart_rate", type="integer")
 	 * @var integer;
 	 */
-	public $avg_hr;
+	public $avgHeartRate;
 	
 	/**
 	 * @Column(name="calories", type="integer")
@@ -108,7 +119,7 @@ class Point
 	 * @Column(name="raw_data", type="text")
 	 * @var Array;
 	 */
-	public $raw_data;
+	public $rawData;
 	
 	
 	/**

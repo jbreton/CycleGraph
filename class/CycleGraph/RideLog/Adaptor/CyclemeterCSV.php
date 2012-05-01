@@ -5,12 +5,17 @@ namespace CycleGraph\RideLog\Adaptor;
 use \CycleGraph\RideLog;
 
 class CyclemeterCSV implements RideLog\Adaptor {
-	protected $_error_message = '';
-	protected $_french_header = array('Temps','Temps de course','Temps de course (secs)','Temps arrêté','Temps arrêté (secs)','Latitude','Longitude','Élévation (mètres)','Distance (km)','Vitesse (km/h)','Allure','Allure (secs)','Vitesse moyenne (km/h)','Allure moyenne','Allure moyenne (secs)','Montée (mètres)','Descente (mètres)','Calories','Rythme cardiaque (bpm)','Rythme cardiaque moyen (bpm)','Cadence (rpm)','Cadence moyenne(rpm)');
+	protected $_errorMessage = '';
+	protected $_frenchHeader = array('Temps','Temps de course','Temps de course (secs)','Temps arrêté','Temps arrêté (secs)','Latitude','Longitude','Élévation (mètres)','Distance (km)','Vitesse (km/h)','Allure','Allure (secs)','Vitesse moyenne (km/h)','Allure moyenne','Allure moyenne (secs)','Montée (mètres)','Descente (mètres)','Calories','Rythme cardiaque (bpm)','Rythme cardiaque moyen (bpm)','Cadence (rpm)','Cadence moyenne(rpm)');
 	
 	protected $_fp;
 	
 	private $_lang;
+	
+	/**
+	 * @var \CycleGraph\ORM\Entity\Route
+	 */
+	private $_route;
 	
 	/**
 	 * @var \CycleGraph\ORM\Entity\Ride
@@ -47,16 +52,20 @@ class CyclemeterCSV implements RideLog\Adaptor {
 	 */
 	public function __constructor() { }
 	
+	public function setRoute(\CycleGraph\ORM\Entity\Route $route) {
+		$this->_route = $route;
+	}
+	
 	/**
 	 * Parse a ride log file
 	 * @param $filename String Path to the file to parse
 	 * @return boolean Could the file be parsed ?
 	 */
-	public function ParseFile($filename) {
+	public function parseFile($filename) {
 		$fp = fopen($filename, 'r');
 		
 		if(!$fp) {
-			$this->_error_message = 'File could not be read';
+			$this->_errorMessage = 'File could not be read';
 			return false;
 		}
 		
@@ -64,19 +73,19 @@ class CyclemeterCSV implements RideLog\Adaptor {
 		
 		if(!$header) {
 			fclose($fp);
-			$this->_error_message = 'Header was emtpy';
+			$this->_errorMessage = 'Header was emtpy';
 			return false;
 		}
 		
 		if(count($header) != 22) {
 			fclose($fp);
-			$this->_error_message = 'Header should contain 22 columns';
+			$this->_errorMessage = 'Header should contain 22 columns';
 			return false;
 		}
 		
 		$french_match = true;
 		foreach($header as $index => $name) {
-			if($this->_french_header[$index] != $name) {
+			if($this->_frenchHeader[$index] != $name) {
 				$french_match = false;
 				break;
 			}
@@ -90,51 +99,55 @@ class CyclemeterCSV implements RideLog\Adaptor {
 		
 		if(!$header_match) {
 			fclose($fp);
-			$this->_error_message = 'Could not match the header to any known language (only french is known so far)';
+			$this->_errorMessage = 'Could not match the header to any known language (only french is known so far)';
 			return false;
 		}
 		
 		$this->_ride = new \CycleGraph\ORM\Entity\Ride();
-
-		$pathinfo = pathinfo($filename);
-		$this->_ride->name = $pathinfo['filename'];
+		$this->_ride->route = $this->_route;
+		$this->_route->rides[] = $this->_ride;
+		
 		$this->_ride->description = '';
 
-		$this->_ride->max_speed = 0;
-		$this->_ride->max_cadence = 0;
-		$this->_ride->max_hr = 0;
+		$this->_ride->maxSpeed = 0;
+		$this->_ride->maxCadence = 0;
+		$this->_ride->maxHeartRate = 0;
 
 		if($line = fgetcsv($fp, 0, ';')) {
 			$this->_ride->date = substr($line[self::F_TIME], 0, 10);
-			$this->_ride->start_time = substr($line[self::F_TIME], 10);
+			$this->_ride->startTime = substr($line[self::F_TIME], 10);
 
 			do {
-				$this->_points[] = $this->ParseLine($this->FormatLine($line));
+				$this->_points[] = $this->parseLine($this->formatLine($line));
 			} while($line = fgetcsv($fp, 0, ';'));
 			
 			fclose($fp);
 		}
 		else {
 			fclose($fp);
-			$this->_error_message = 'No ride point could be generated';
+			$this->_errorMessage = 'No ride point could be generated';
 			return false;
 		}
 
 		if(count($this->_points) == 0) {
 			fclose($fp);
-			$this->_error_message = 'No ride point could be generated';
+			$this->_errorMessage = 'No ride point could be generated';
 			return false;
 		}
 		else {
-			$last_point = $this->_points[count($this->_points) - 1];
+			$lastPoint = $this->_points[count($this->_points) - 1];
 
-			$this->_ride->end_time = substr($last_point->real_time, 10);
-
-			$this->_ride->avg_speed = $last_point->avg_speed;
-			$this->_ride->avg_cadence = $last_point->avg_cadance;
-			$this->_ride->avg_hr = $last_point->avg_hr;
-			$this->_ride->distance = $last_point->distance;
-			$this->_ride->ascent = $last_point->ascent;
+			$this->_ride->endTime = substr($lastPoint->realTime, 10);
+			$this->_ride->duration = $lastPoint->duration;
+			$this->_ride->stoppedTime = $lastPoint->stoppedTime;
+			
+			$this->_ride->avgSpeed = $lastPoint->avgSpeed;
+			$this->_ride->avgCadence = $lastPoint->avgCadance;
+			$this->_ride->avgHeartRate = $lastPoint->avgHeartRate;
+			$this->_ride->calories = $lastPoint->calories;
+			$this->_ride->distance = $lastPoint->distance;
+			$this->_ride->ascent = $lastPoint->ascent;
+			$this->_ride->descent = $lastPoint->descent;
 
 			return true;
 		}
@@ -145,15 +158,17 @@ class CyclemeterCSV implements RideLog\Adaptor {
 	 * @param Array $line Parse line
 	 * @return \CycleGraph\ORM\Entity\Point Point entity from parsed line
 	 */
-	private function ParseLine($line) { 		
-		$this->_ride->max_speed = max($this->_ride->max_speed, $line[self::F_SPEED]);
-		$this->_ride->max_cadence = max($this->_ride->max_cadence, $line[self::F_CADENCE]);
-		$this->_ride->max_hr = max($this->_ride->max_hr, $line[self::F_HR]);
+	private function parseLine($line) { 		
+		$this->_ride->maxSpeed = max($this->_ride->maxSpeed, $line[self::F_SPEED]);
+		$this->_ride->maxCadence = max($this->_ride->maxCadence, $line[self::F_CADENCE]);
+		$this->_ride->maxHeartRate = max($this->_ride->maxHeartRate, $line[self::F_HR]);
 		
 		$point = new \CycleGraph\ORM\Entity\Point();
 		
-		$point->real_time = $line[self::F_TIME];
-		$point->ride_time = $line[self::F_RIDE_TIME];
+		$point->realTime = $line[self::F_TIME];
+		$point->rideTime = $line[self::F_RIDE_TIME];
+		$point->duration = $line[self::F_RIDE_TIME_SEC];
+		$point->stoppedTime = $line[self::F_TIME_STOPPED_SEC];
 		
 		$point->latitude = $line[self::F_LATITUDE];
 		$point->longitude = $line[self::F_LONGITUDE];
@@ -163,16 +178,16 @@ class CyclemeterCSV implements RideLog\Adaptor {
 		$point->descent = $line[self::F_DESCENT];
 		
 		$point->speed = $line[self::F_SPEED];
-		$point->avg_speed = $line[self::F_AVG_SPEED];
+		$point->avgSpeed = $line[self::F_AVG_SPEED];
 		
 		$point->cadence = $line[self::F_CADENCE];
-		$point->avg_cadance = $line[self::F_AVG_CADENCE];
+		$point->avgCadance = $line[self::F_AVG_CADENCE];
 		
-		$point->hr = $line[self::F_HR];
-		$point->avg_hr = $line[self::F_AVG_HR];
+		$point->heartRate = $line[self::F_HR];
+		$point->avgHeartRate = $line[self::F_AVG_HR];
 		$point->calories = $line[self::F_CALORIES];
 		
-		$point->raw_data = $this->GetLineRawData($line);
+		$point->rawData = $this->getLineRawData($line);
 		
 		$point->ride = $this->_ride;
 		$this->_ride->points[] = $point;
@@ -185,15 +200,15 @@ class CyclemeterCSV implements RideLog\Adaptor {
 	 * Get the parsing error message
 	 * @return string Error message
 	 */
-	public function GetParseError() {
-		return $this->_error_message;
+	public function getParseError() {
+		return $this->_errorMessage;
 	}
 	
 	/**
 	 * Return a filled \CycleGraph\ORM\Entity\Ride. Do not add points to the ride, the parser will take care of it.
 	 * @return \CycleGraph\ORM\Entiry\Ride Ride entity filled with data from the log file
 	 */
-	public function GetRideEntity() {
+	public function getRideEntity() {
 		return $this->_ride;
 	}
 	
@@ -202,7 +217,7 @@ class CyclemeterCSV implements RideLog\Adaptor {
 	 * Return false/NULL if there is no more points to be parsed.
 	 * @return \CycleGraph\ORM\Entiry\Point Point entity filled with data from the log file.
 	 */
-	public function GetPointEntity() {
+	public function getPointEntity() {
 		if(isset($this->_points[$this->_current_point])) {
 			return $this->_points[$this->_current_point++];
 		}
@@ -211,7 +226,7 @@ class CyclemeterCSV implements RideLog\Adaptor {
 		}
 	}
 	
-	private function GetLineRawData($line) {
+	private function getLineRawData($line) {
 		$reflection = new \ReflectionClass(get_class());
 		$constants = $reflection->getConstants();
 		
@@ -223,7 +238,7 @@ class CyclemeterCSV implements RideLog\Adaptor {
 		return json_encode($raw);
 	}
 	
-	private function FormatLine($line) {
+	private function formatLine($line) {
 		if($this->_lang == 'fr') {
 			foreach($line as $index => $value) {
 				if(strpos($value, ',') >= 0)

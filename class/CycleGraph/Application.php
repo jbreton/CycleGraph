@@ -73,7 +73,6 @@ class Application {
 			$ride = $em->find('\CycleGraph\ORM\Entity\Ride', (int)$_GET['ride']);
 			
 			$series = array(
-				'effort' => array('name' => 'Effort', 'data' => array()),
 				'cadence' => array('name' => 'Cadence', 'data' => array()),
 				'hr' => array('name' => 'HR', 'data' => array()),
 				'avg_hr' => array('name' => 'AVG HR', 'data' => array()),
@@ -82,29 +81,21 @@ class Application {
 			);
 			
 			foreach($ride->points as $index => $point) {
-				$time = new \DateTime($point->real_time);
-				
-				$raw = json_decode($point->raw_data);
-				
-				if($raw->F_TIME_STOPPED_SEC != $prev_stopped_time) {
-					$prev_stopped_time = $raw->F_TIME_STOPPED_SEC;
-					
-					$prev_point = $ride->points[$index-1];
-					$prev_time = new \DateTime($prev_point->real_time);
+				if($point->stoppedTime != $prev_stopped_time) {
+					$prev_stopped_time = $point->stoppedTime;
 					
 					$bands[] = array(
-						'from' => (int)($prev_time->format('U').'000')+2577600000,
-						'to' => (int)($time->format('U').'000')+2577600000,
+						'from' => $index-1,
+						'to' => $index,
 						'color' => '#555555'
 					);
 				}
 
-				$series['effort']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)($point->hr / $point->cadence));
-				$series['cadence']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->cadence);
-				$series['hr']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->hr);
-				$series['avg_hr']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$ride->avg_hr);
-				$series['relative_avg_hr']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->avg_hr);
-				$series['elevation']['data'][] = array((int)($time->format('U').'000')+2577600000, (int)$point->elevation);
+				$series['cadence']['data'][] = array($index, (int)$point->cadence);
+				$series['hr']['data'][] = array($index, (int)$point->heartRate);
+				$series['avg_hr']['data'][] = array($index, (int)$ride->avgHeartRate);
+				$series['relative_avg_hr']['data'][] = array($index, (int)$point->avgHeartRate);
+				$series['elevation']['data'][] = array($index, (int)$point->elevation);
 			}
 			
 			echo '<script type="text/javascript">
@@ -123,7 +114,7 @@ $(function () {
                 x: -20 //center
             },
             xAxis: {
-				type:\'datetime\',
+				type:\'linear\',
 				plotBands: '.json_encode($bands).',
             },
             yAxis: {
@@ -180,12 +171,10 @@ $(function () {
 			
 			$prev_stopped_time = 0;
 			foreach($ride->points as $index => $point) {
-				$time = new \DateTime($point->real_time);
-				
-				$series2['speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->speed);
-				$series2['max_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->max_speed);
-				$series2['avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$ride->avg_speed);
-				$series2['relative_avg_speed']['data'][] = array((int)($time->format('U').'000')+2577600000, (float)$point->avg_speed);
+				$series2['speed']['data'][] = array($index, (float)$point->speed);
+				$series2['max_speed']['data'][] = array($index, (float)$ride->maxSpeed);
+				$series2['avg_speed']['data'][] = array($index, (float)$ride->avgSpeed);
+				$series2['relative_avg_speed']['data'][] = array($index, (float)$point->avgSpeed);
 			}
 
 			echo '<script type="text/javascript">
@@ -210,7 +199,7 @@ $(function () {
 					x: -20 //center
 				},
 				xAxis: {
-					type:\'datetime\',
+					type:\'linear\',
 					plotBands: '.json_encode($bands).',
 				},
 				yAxis: {
@@ -223,7 +212,7 @@ $(function () {
 						color: \'#808080\'
 					}],
 					min : 0,
-					max : '.(ceil($ride->max_speed / 10) * 10).'
+					max : '.(ceil($ride->maxSpeed / 10) * 10).'
 				},
 				tooltip: {
 					formatter: function() {

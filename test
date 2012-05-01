@@ -1,0 +1,7 @@
+<?php
+
+date_default_timezone_set('America/New_York');
+
+$dt = new DateTime('2012-01-01 12:34:56');
+
+echo $dt->format(DateTime::ISO8601);

@@ -16,12 +16,6 @@ class Ride
 	public $id;
 
 	/**
-	 * @Column(name="name", type="string")
-	 * @var string
-	 */
-	public $name;
-
-	/**
 	 * @Column(name="ride_date", type="string")
 	 */
 	public $date;
@@ -29,12 +23,22 @@ class Ride
 	/**
 	 * @Column(name="start_time", type="string")
 	 */
-	public $start_time;
+	public $startTime;
 	
 	/**
 	 * @Column(name="end_time", type="string")
 	 */
-	public $end_time;
+	public $endTime;
+	
+	/**
+	 * @Column(name="duration", type="decimal", precision=7, scale=2)
+	 */
+	public $duration;
+	
+	/**
+	 * @Column(name="stopped_time", type="decimal", precision=7, scale=2)
+	 */
+	public $stoppedTime;
 	
 	/**
 	 * @Column(name="distance", type="decimal", precision=7, scale=2)
@@ -44,32 +48,37 @@ class Ride
 	/**
 	 * @Column(name="avg_speed", type="decimal", precision=7, scale=2)
 	 */
-	public $avg_speed;
+	public $avgSpeed;
 	
 	/**
 	 * @Column(name="max_speed", type="decimal", precision=7, scale=2)
 	 */
-	public $max_speed;
+	public $maxSpeed;
 	
 	/**
 	 * @Column(name="avg_cadence", type="integer")
 	 */
-	public $avg_cadence;
+	public $avgCadence;
 	
 	/**
 	 * @Column(name="max_cadence", type="integer")
 	 */
-	public $max_cadence;
+	public $maxCadence;
 	
 	/**
-	 * @Column(name="avg_hr", type="integer")
+	 * @Column(name="avg_heart_rate", type="integer")
 	 */
-	public $avg_hr;
+	public $avgHeartRate;
 	
 	/**
-	 * @Column(name="max_hr", type="integer")
+	 * @Column(name="max_heart_rate", type="integer")
 	 */
-	public $max_hr;
+	public $maxHeartRate;
+	
+	/**
+	 * @Column(name="calories", type="integer")
+	 */
+	public $calories;
 	
 	/**
 	 * @Column(name="ascent", type="decimal", precision=7, scale=2)
@@ -77,10 +86,28 @@ class Ride
 	public $ascent;
 	
 	/**
+	 * @Column(name="descent", type="decimal", precision=7, scale=2)
+	 */
+	public $descent;
+	
+	/**
 	 * @Column(name="description", type="text")
 	 * @var string
 	 */
-	public $description;
+	public $description = '';
+	
+	/**
+	 * @Column(name="ignore_ride", type="text");
+	 */
+	public $ignore = "N";
+	
+	/**
+	 * @ManyToOne(targetEntity="CycleGraph\ORM\Entity\Route")
+	 * @JoinColumns({
+	 *   @JoinColumn(name="route", referencedColumnName="id")
+	 * })
+	 */
+	public $route;
 
 	/**
 	 * @OneToMany(targetEntity="CycleGraph\ORM\Entity\Point",

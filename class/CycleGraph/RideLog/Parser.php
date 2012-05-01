@@ -27,10 +27,12 @@ class Parser {
 		}
 	}
 	
-	public function ParseFile($filename) {
+	public function ParseFile(\CycleGraph\ORM\Entity\Route $route, $filename) {
 		if(!file_exists($filename)) {
 			throw new \Exception('File does not exists : '.$filename);
 		}
+		
+		$this->_adaptor->SetRoute($route);
 		
 		if($this->_adaptor->ParseFile($filename)) {
 			$ride = $this->_adaptor->GetRideEntity();
@@ -39,6 +41,9 @@ class Parser {
 			while($point = $this->_adaptor->GetPointEntity()) {
 				$this->_em->persist($point);
 			}
+			
+			$route->updateStatistics();
+			$this->_em->persist($route);
 			
 			$this->_em->flush();
 		}
